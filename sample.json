@@ -1,0 +1,54 @@
+{
+  "tool": "burp",
+  "findings": [
+    {
+      "title": "Broken Access Control",
+      "severity": "critical",
+      "cvss": 9.1,
+      "asset": "api.prod",
+      "endpoint": "/api/users/{id}",
+      "owasp": "A01:2021",
+      "cwe": "CWE-284",
+      "evidence": {
+        "repro_steps": [
+          "Authenticate as low-priv user",
+          "Request /api/users/1234 and observe access to another user"
+        ],
+        "request": "GET /api/users/1234",
+        "response": "200 OK { user: ... }"
+      }
+    },
+    {
+      "title": "SQL Injection",
+      "severity": "high",
+      "cvss": 8.5,
+      "asset": "web.prod",
+      "endpoint": "/api/search",
+      "owasp": "A03:2021",
+      "cwe": "CWE-89",
+      "evidence": {
+        "repro_steps": [
+          "Send malicious SQL payload in search parameter"
+        ],
+        "request": "GET /api/search?q=test' OR '1'='1",
+        "response": "Database error exposed"
+      }
+    },
+    {
+      "title": "Missing Security Headers",
+      "severity": "medium",
+      "cvss": 5.3,
+      "asset": "web.stage",
+      "endpoint": "/",
+      "owasp": "A05:2021",
+      "cwe": "CWE-693",
+      "evidence": {
+        "repro_steps": [
+          "Inspect HTTP response headers"
+        ],
+        "request": "GET /",
+        "response": "Missing X-Frame-Options, CSP headers"
+      }
+    }
+  ]
+}

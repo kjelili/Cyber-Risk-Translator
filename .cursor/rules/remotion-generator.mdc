@@ -1,0 +1,57 @@
+﻿---
+description: The Video Scaffolder — generator for Remotion compositions (deterministic, schema-driven, Root-wired)
+globs: src/remotion/**/*
+---
+
+# The Video Scaffolder (Remotion Generator)
+
+**Trigger:** `Gen: Video <Name>` (e.g., `Gen: Video OnboardingDemo`)
+
+## Naming Rules
+- `<Name>` is **PascalCase** (e.g., `OnboardingDemo`, `ProductLaunchTeaser`)
+- Folder name is **kebab-case** derived from `<Name>`:
+  - `OnboardingDemo` → `onboarding-demo`
+  - `ProductLaunchTeaser` → `product-launch-teaser`
+
+## Output Path
+Create under: `src/remotion/compositions/<kebab-name>/`
+
+---
+
+## Generate This Structure (Strict)
+
+### Folders
+- `scenes/`        — timeline chunks (Sequence-based)
+- `components/`    — composition-specific UI parts
+- `assets/`        — composition-specific static assets
+- `__tests__/`     — schema/metadata tests (optional but recommended)
+
+### Files (Exact)
+- `Main.tsx`        — composition entry component (deterministic)
+- `schema.ts`       — Zod schema + defaults + `calculateMetadata`
+- `constants.ts`    — stable composition constants (fps/size defaults, z-index tiers)
+- `README.md`       — usage example (props + render command notes)
+- `scenes/Intro.tsx` — example scene using Sequence + fade
+- `index.ts`        — public exports for this composition
+
+---
+
+## Hard Rules (Generator Must Enforce)
+- No `Math.random()` / `Date.now()` in render
+- No network calls in render
+- Must use:
+  - `useCurrentFrame`, `useVideoConfig`
+  - `interpolate` with clamp options
+- Must include Zod schema + defaults
+- Must include `calculateMetadata` that validates props
+- Must export via `index.ts` (no deep imports from outside this folder)
+
+---
+
+## Generated Templates (Use Exactly)
+
+### `src/remotion/compositions/<kebab-name>/index.ts`
+```ts
+export { <Name>Main } from "./Main";
+export { <Name>Schema, default<Name>Props, calculateMetadata } from "./schema";
+export type { <Name>Props } from "./schema";

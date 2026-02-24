@@ -1,0 +1,70 @@
+﻿---
+description: Tailwind CSS styling standards (includes Prettier + prettier-plugin-tailwindcss enforcement)
+globs: **/*.{tsx,css,md,mdx,json,yaml,yml}
+---
+
+# Tailwind CSS Rules (Enforced via Prettier)
+
+## Required Tooling
+This repo must use:
+- `prettier`
+- `prettier-plugin-tailwindcss`
+
+**Rule:** Tailwind class ordering is enforced by formatting.
+
+---
+
+## Formatting Rules (Non-Negotiable)
+- Prettier on save and in CI
+- Tailwind class strings must be auto-sorted by the plugin
+- Don’t hand-order classes; reformat
+
+---
+
+## Conditional Classes (React)
+Use `clsx` + `tailwind-merge` (or equivalent).
+Avoid nested ternaries for long class strings.
+
+---
+
+## Token-First Styling
+- No hardcoded hex/rgb (`[#123456]`) unless temporary + TODO
+- Prefer theme tokens / CSS variables
+
+---
+
+## Accessibility Defaults
+- Prefer `focus-visible:*` for focus rings
+- Interactive elements must have hover + focus-visible states
+- Don’t remove outlines unless replaced
+
+---
+
+## CSS Usage
+Avoid `@apply` by default.
+Allowed only for:
+- `@layer base` defaults
+- global primitives
+- stable cross-feature utilities
+
+---
+
+## Enforcement Notes
+- If plugin ordering conflicts with “manual rules”, plugin wins
+- CI must fail on `prettier --check .`
+
+---
+
+## Minimal Setup Reference (for maintainers)
+
+### Install
+- `npm i -D prettier prettier-plugin-tailwindcss`
+
+### Prettier config (example)
+```json
+{
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "all"
+}

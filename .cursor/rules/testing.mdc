@@ -1,0 +1,55 @@
+---
+description: QA testing standards for Vitest/Jest + React Testing Library (reliable, accessible, CI-ready)
+globs: **/*.{test,spec}.{ts,tsx}
+---
+
+# Testing Standards (Vitest/Jest + RTL)
+
+## Goals
+- Behavior-focused, not implementation-focused
+- Accessible queries by default
+- Deterministic, non-flaky tests
+
+---
+
+## Query Priority
+1. `getByRole` / `findByRole`
+2. `getByLabelText` / `findByLabelText`
+3. `getByPlaceholderText` (forms only)
+4. `getByText`
+5. `getByTestId` (last resort + comment why)
+
+---
+
+## AAA Structure
+- Arrange: render + setup
+- Act: `userEvent` (prefer over `fireEvent`)
+- Assert: visible outcomes
+
+---
+
+## Async Rules
+- Use `findBy*` for async UI
+- `await userEvent.*`
+- Avoid manual delays/timeouts
+- Use `waitFor` only when needed
+
+---
+
+## Mocking Standards
+Prefer mocking boundaries:
+- MSW recommended
+- Otherwise mock feature API modules (`features/<x>/api/*`)
+Do not mock child components unless heavy/unstable.
+
+---
+
+## What NOT to Test
+- Large snapshots
+- Tailwind/class strings (unless behavior)
+- Third-party library behavior
+
+---
+
+## CI Rules
+Flaky tests are treated as broken: fix or remove immediately.

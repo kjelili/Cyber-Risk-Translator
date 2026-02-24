@@ -1,0 +1,111 @@
+﻿---
+description: Scaffolder for new Vertical Features (complete slice: UI + model + api + tests + exports)
+globs: src/features/**/*
+---
+
+# Feature Scaffolder (Vertical Slice)
+
+**Trigger:** `Gen: Feature <Name>`
+
+## Naming Rules
+- `<Name>` is provided in **PascalCase** (e.g., `UserProfile`, `Checkout`).
+- Feature folder name is **kebab-case** derived from `<Name>`:
+  - `UserProfile` → `user-profile`
+  - `Admin` → `admin`
+
+## Output Path
+Create under: `src/features/<kebab-name>/`
+
+---
+
+## Generate This Structure
+
+### Folders
+- `ui/`          — feature components (feature-aware allowed)
+- `api/`         — feature API module(s)
+- `model/`       — state, selectors, domain logic, validation
+- `lib/`         — feature-only helpers
+- `types/`       — feature-only TS types
+- `__tests__/`   — feature tests (RTL/unit as appropriate)
+
+> If your repo does not use `__tests__`, colocate tests next to files instead.
+
+---
+
+## Files to Generate (Exact)
+
+### 1) `index.ts` (Public API)
+- Must export ONLY the public surface:
+  - feature entry component (main UI)
+  - optional types meant for consumers
+  - optional route config (if your app uses it)
+
+Create:
+- `export { <Name>Main } from "./ui/<Name>Main";`
+- `export type { <Name>Props } from "./types";`
+
+> No deep exports of internals unless explicitly intended.
+
+---
+
+### 2) `types/index.ts`
+Create:
+- `export type <Name>Props = Record<string, never>;`
+
+> Prefer `type` over `interface`. Use `Record<string, never>` instead of `{}`.
+
+---
+
+### 3) `ui/<Name>Main.tsx`
+Create a production-friendly functional component:
+- named export
+- typed props
+- minimal structure and placeholder slots
+- no side effects by default
+
+Include:
+- semantic wrapper (`section`)
+- heading placeholder
+- `data-testid` NOT included unless necessary
+
+---
+
+### 4) `api/<kebab-name>.api.ts`
+Create a feature API module with:
+- placeholder for queries/mutations
+- boundary parsing comment (Zod required for external data)
+- no direct usage in UI yet (wire in via hooks later)
+
+---
+
+### 5) `model/<kebab-name>.model.ts`
+Create a model placeholder for:
+- derived state helpers
+- local feature state shape (if needed)
+- validation hooks (if needed)
+
+---
+
+### 6) `lib/<kebab-name>.lib.ts`
+Create a small helper placeholder for pure utilities (feature-private).
+
+---
+
+### 7) Tests (Minimal but Real)
+Generate at least one test file:
+
+Option A (RTL):
+- `__tests__/<Name>Main.test.tsx`
+- asserts the heading renders
+
+Option B (Colocated):
+- `ui/<Name>Main.test.tsx`
+
+---
+
+## Template Content (Use Exactly)
+
+### `src/features/<kebab-name>/index.ts`
+```ts
+export { <Name>Main } from "./ui/<Name>Main";
+export type { <Name>Props } from "./types";

@@ -1,0 +1,82 @@
+﻿---
+description: React + TypeScript engineering standards (architecture, safety, performance, DX)
+globs: **/*.{ts,tsx}
+---
+
+# React & TypeScript Standards (Production-Grade)
+
+## Non-Negotiables
+- Function components only
+- Named exports only (no default exports)
+- Strict TS: no `any` (use `unknown` + narrowing)
+- Effects must be justified and scoped
+
+---
+
+## Components
+
+### Component Shape
+- Prefer pure components: props in → UI out
+- Split responsibility:
+  - feature/container: orchestration + data calls
+  - shared/ui: presentational primitives
+
+### Naming
+- Components: `PascalCase`
+- Hooks: `useXxx`
+- Types: `XxxProps`, `XxxDTO`, `XxxResponse`
+
+### Props
+- Always define `type` for props (prefer `type` over `interface`)
+- Prefer composition over boolean prop explosion
+
+---
+
+## Hooks & Effects
+- Hooks must be deterministic and single-purpose
+- `useEffect` is only for syncing external systems (subscriptions, timers, imperative APIs)
+- Do NOT derive state from props in effects
+
+---
+
+## TypeScript
+- No `any`
+- Prefer union literals over enums
+- Infer simple return types; explicitly type public exports and complex generics
+- Use `never` for exhaustive checks
+
+---
+
+## Zod (Required)
+Validate all external boundaries:
+- API responses
+- payloads
+- env/config
+- URL params
+- storage reads
+
+Parse at boundary; use inferred types internally.
+
+---
+
+## State Management
+- Local UI state: `useState` / `useReducer` for complex transitions
+- Server state: TanStack Query (default)
+- Global client state: Context for truly global, Zustand only when justified
+- Don’t duplicate server state into global state
+
+---
+
+## Error & Loading UX
+Every async view must define:
+- loading
+- empty
+- error
+- success
+
+---
+
+## Accessibility (Required)
+- No clickable `div` without role + keyboard support
+- Inputs must have labels
+- Use `focus-visible` patterns for focus styling

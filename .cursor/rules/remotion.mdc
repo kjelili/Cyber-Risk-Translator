@@ -1,0 +1,240 @@
+﻿---
+description: The Video Director — Remotion standards (deterministic, scalable, CI-renderable)
+globs: remotion/**/*, src/remotion/**/*
+---
+
+# The Video Director (Remotion Standards)
+
+## Goals
+- **Deterministic renders** (same input → identical frames)
+- **Composable templates** (scenes + reusable primitives)
+- **Fast renders** (no layout thrash, no heavy per-frame work)
+- **Schema-driven props** (safe, editable, automatable)
+- **CI-friendly** (render in pipelines without surprises)
+
+## Prerequisites:
+- **Node.js - Required for Remotion video creation
+- **Python3x - Required for voiceover generation script
+- **ffmpeg - Required for audio/video processing (npm install ffmpeg)
+- **ELEVEN_LABS_API_KEY environment variable with your ElevenLabs API Key
+- **Whisper (optional) - For voiceover timming verification (pip install openai-whisper)
+- **Remotion-best-practices skill installed (npx skills add remotion-dev/skills)
+
+What it creates 
+
+- 1920x1080 full HD promotional videos
+- AI-generated voiceover synced to on-screen visuals
+- Background music mixing with fade in/out
+- Professional transitions(mettalic swoosh, zoom through, fade, slide)
+
+Video Output
+
+- Product offers and positioning
+- Target Audience
+- Problems solved and pain points to hit
+- Features: 
+ -Slide from right(Content slides in horizontally)
+ -Fade(Classic smooth crossfade)
+ -Metallic swoosh(Diagonal gradient shine sweeps across)
+ -Scale up(Next scene pops in from 80% to 100% with fade)
+- CTA
+ -Mettalic swoosh(Diagonal gradient shine sweeps across
+ -Zoom through(Scale up and push through)
+ -Fade(Classic smooth crossfade)
+ -Scale up(CTA grows in from center)
+- Duration (120s)
+ -Quick(0.4s) Snappy, energetic
+ -Medium(0.75s) Balanced, professional
+ -Slow(1.2s) Dramatic, cinematic)
+- Theme:
+ -light mode (clean, bright and professional)
+ -Dark mode (morden, bold and dramatic)
+- Voice (Maltida: Warm, confident female-polished and versatile) or better alternative
+- Sections:
+ -mellatic swoosh(Diagonal gradient shine sweeps across)
+ -Zoom through(Scale up and push through to next scene)
+ -Fade(Classic smooth crossfade)
+ -Slide from bottom(Next scene pushes up from below)
+
+Included resources:
+- 3 royalty-free background music tracks (Pixabay)
+
+---
+
+## 1) Determinism (Hard Rules)
+**The render must be identical every time.**
+
+### Forbidden
+- `Math.random()` (use Remotion `random(seed)` instead)
+- `Date.now()`, `new Date()`, timers, intervals
+- Network/API calls during render
+- Reading from local storage / window state / environment that changes between runs
+- Non-deterministic fonts (missing fonts, remote font loading at render time)
+
+### Required
+- All variable data is provided via:
+  - `props`, or
+  - precomputed assets, or
+  - build-time/pre-render step that produces deterministic inputs
+- Any randomness must be:
+  - seeded **and**
+  - derived from stable identifiers (e.g. `random(`${seed}-${sceneId}`)`)
+
+**Rule:** If the video depends on external data, fetch it before rendering and pass it as props.
+
+---
+
+## 2) Performance (Hard Rules)
+Remotion runs your component tree for many frames. Keep per-frame work minimal.
+
+### Forbidden (per-frame)
+- expensive array `.map()` over large datasets without memoization
+- parsing JSON, regex-heavy transforms, or complex layout calculations
+- generating gradients/paths repeatedly without caching
+
+### Required
+- Precompute static values using:
+  - `useMemo` (pure)
+  - helper functions (pure)
+- Compute animation values using `frame` + `interpolate/spring`, not repeated heavy logic.
+- Prefer transforms over layout:
+  - ✅ `transform: translate/scale/rotate`
+  - ❌ changing `top/left/width/height` every frame (unless necessary)
+
+**Rule:** Anything not dependent on `frame` should not be recomputed each frame.
+
+---
+
+## 3) Composition & Scene Architecture
+Break complex videos into small predictable units.
+
+### Required Structure
+- **Composition Entry**: sets up layout, background, audio, and scene orchestration
+- **Scenes**: `Sequence`-based sections of the timeline
+- **Primitives**: shared building blocks (lower thirds, titles, charts, transitions)
+
+**Rule:** Scenes must not reach into other compositions’ internals (use shared primitives if needed).
+
+---
+
+## 4) Directory Standards (Strict)
+
+### Canonical Layout
+- `src/remotion/Root.tsx` — registers all compositions
+- `src/remotion/compositions/<kebab-name>/`
+  - `Main.tsx` — composition entry component
+  - `schema.ts` — Zod schema + default props + metadata helpers
+  - `scenes/` — scene components
+  - `components/` — composition-specific UI pieces
+  - `assets/` — composition-specific images/audio
+  - `styles.ts` — shared style objects (optional, if not using Tailwind)
+
+### Shared Remotion Library
+- `src/remotion/shared/`
+  - `components/` — reusable primitives
+  - `transitions/` — reusable transitions
+  - `animations/` — standard animation helpers
+  - `fonts/` — local font loading + registration
+  - `utils/` — deterministic helpers only
+
+---
+
+## 5) Props, Schemas & Metadata (Non-Negotiable)
+
+### Zod Schema Required
+Every composition must define:
+- a `zod` schema (props contract)
+- default props
+- `calculateMetadata` that validates props and sets:
+  - `durationInFrames`
+  - `fps`, `width`, `height` (when variable)
+  - optional: title, description
+
+**Rule:** Never render a composition without `schema.parse(props)` at the boundary.
+
+### Deterministic Defaults
+- Defaults must be stable and not depend on runtime state.
+- Avoid “today’s date”, “random pick”, or “current time”.
+
+---
+
+## 6) Animation Standards
+Use Remotion primitives consistently.
+
+### Required
+- `useCurrentFrame()` for frame
+- `useVideoConfig()` for `fps/width/height`
+- `interpolate()` for scalar animation
+- `spring()` for natural UI motion
+
+### Animation Guidelines
+- Clamp by default to avoid flicker:
+  - use `extrapolateLeft/Right: "clamp"`
+- Prefer easing/spring for movement; linear for opacity or progress bars.
+- Keep animation utilities centralized in `src/remotion/shared/animations`.
+
+---
+
+## 7) Layering & Layout
+Video = layers. Make it explicit.
+
+### Required
+- Use `AbsoluteFill` or `absolute inset-0` for full-frame layers.
+- Use explicit z-index tiers:
+  - Background: 0–9
+  - Content: 10–49
+  - Overlay/FX: 50–79
+  - HUD/Watermark/Subtitles: 80–99
+
+### Forbidden
+- relying on DOM order for z layering in complex scenes
+- hidden overflow bugs (must deliberately set `overflow: hidden` where needed)
+
+---
+
+## 8) Assets, Fonts, Audio
+### Fonts (Required)
+- Fonts must be local and loaded deterministically (no remote font fetch during render).
+- Define a shared font loader in `src/remotion/shared/fonts`.
+
+### Images/Video/Audio
+- Store template-specific assets inside that composition’s `assets/`.
+- Reusable assets go in `src/remotion/shared/assets/`.
+- Avoid huge assets in git without LFS (if your repo uses it).
+
+### Audio Rules
+- Any audio start/end must be explicit.
+- No implicit autoplay behavior.
+- Ensure fades are deterministic.
+
+---
+
+## 9) Error Handling & Safety
+- Schema errors must fail fast with a clear message.
+- Validate:
+  - durations > 0
+  - font availability
+  - asset existence (when path-based)
+- Avoid runtime “undefined” in render—guard at boundaries.
+
+---
+
+## 10) Testing & QA (Recommended)
+- Unit test:
+  - schema parsing
+  - metadata calculation (duration logic)
+  - any deterministic helpers (e.g., seeded randomness)
+- A “smoke render” test per composition if your pipeline supports it.
+
+---
+
+## 11) Standard Patterns
+
+### Fading (Standard)
+```tsx
+const frame = useCurrentFrame();
+
+const opacity = interpolate(frame, [0, 20], [0, 1], {
+  extrapolateLeft: "clamp",
+  extrapolateRight: "clamp",
+});

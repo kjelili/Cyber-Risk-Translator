@@ -1,0 +1,114 @@
+﻿---
+description: Enforces Vertical Slice / Feature-Based Architecture (strict boundaries, shared layer, and import rules)
+globs: src/**/*
+---
+
+# Architecture Rule: Vertical Slices (Feature-Based)
+
+## Goal
+Organize code by **Business Capability** (feature/domain), not by technical layer.
+
+✅ Good:
+- src/features/auth/*
+- src/features/cart/*
+
+❌ Bad:
+- src/components/* (for business components)
+- src/hooks/* (for business hooks)
+- src/utils/* (for business utilities)
+
+---
+
+## Canonical Structure
+
+### 1) src/features/<featureName>/
+Each feature is a **self-contained vertical slice**.
+
+Recommended subfolders:
+- ui/ — feature UI (feature-aware allowed)
+- pi/ — feature API calls, DTO mappers
+- model/ — state, reducers, domain logic, validation
+- lib/ — feature-only helpers (NOT shared)
+- 	ypes/ — feature-only TS types (or colocate)
+- outes/ — feature routing config (if applicable)
+- index.ts — **Public API** (barrel export)
+
+**Rule:** Anything not exported from eatures/<feature>/index.ts is **private**.
+
+---
+
+### 2) src/shared/
+Use shared/ for **feature-agnostic** reusable code.
+
+Allowed:
+- shared/ui/ — atoms/design primitives (Button, Input, Card)
+- shared/lib/ — generic helpers (formatting, guards)
+- shared/api/ — base http client/fetch wrapper
+- shared/types/ — truly global types only
+- shared/config/ — app-wide constants/config
+- shared/assets/ — icons/images
+
+Not allowed in shared/:
+- feature/domain-specific logic or naming (uth, cart, etc.)
+
+---
+
+### 3) Optional: src/app/ (composition layer)
+- routing
+- providers
+- layout shell
+
+pp/ may import from eatures/* and shared/*.
+Features must not import from pp/.
+
+---
+
+## Strict Boundary Rules
+
+### A) Cross-feature imports must use the public API
+✅ Allowed:
+- import { login } from "@/features/auth";
+
+❌ Disallowed:
+- import { login } from "@/features/auth/api/login";
+- import { AuthForm } from "@/features/auth/ui/AuthForm";
+
+---
+
+### B) No feature-to-feature internal coupling
+A feature must not:
+- read/mutate another feature’s state
+- call another feature’s internal API clients
+- import another feature’s internal types/models
+
+If communication is needed:
+- expose a minimal stable surface in index.ts, or
+- move truly generic code into shared/, or
+- create a new feature that owns the shared domain
+
+---
+
+### C) Shared UI is dumb; Feature UI can be smart
+shared/ui:
+- no business logic
+- no API calls
+- no side effects
+- no feature-specific imports
+
+eatures/*/ui:
+- can use feature hooks/state
+- can call feature API
+- can coordinate flows for that feature
+
+---
+
+## Naming & Conventions
+- Feature folder names: kebab-case recommended (user-profile, checkout)
+- Public API exports should be explicit
+- Avoid root “catch-all” folders like src/utils, src/hooks, src/api
+
+---
+
+## Quick Decision Guide
+Put it in eatures/<x> if it’s domain-specific or used by one feature.
+Put it in shared/ only if it is reusable and business-agnostic.
